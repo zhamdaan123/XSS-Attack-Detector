@@ -13,7 +13,7 @@ def get_content(request: Request):
 def show_content(request: Request):
     content = get_content(request)
     page = """
-    <h1>Unprotected Content</h1>
+    <h1>Saved Content</h1>
     <a href="/">Go back</a>
     <span style="margin: 0 .5rem;">|</span>
     <a href="/demo/content/clear">Clear Content</a>
