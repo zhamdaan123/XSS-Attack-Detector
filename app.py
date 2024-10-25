@@ -1,5 +1,6 @@
-from src import app
+from src import my_app
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app="__main__:app", reload=True)
+    my_app()
+    # import uvicorn
+    # uvicorn.run(app="__main__:app", reload=True)
