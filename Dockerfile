@@ -1,26 +1,23 @@
-FROM python:3.12 AS builder
+# Use Python 3.12-slim image
+FROM python:3.12-slim
 
+# Set the working directory
 WORKDIR /app
 
-RUN python3 -m venv venv
-ENV VIRTUAL_ENV=/app/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
+# Copy requirements file
 COPY requirements.txt .
-RUN pip install -r requirements.txt
 
-# Stage 2
-FROM python:3.12 AS runner
+# Install venv and create a virtual environment
+RUN python3 -m venv /app/venv
 
-WORKDIR /app
+# Activate virtual environment and install dependencies
+RUN . /app/venv/bin/activate && pip install -r requirements.txt
 
-COPY --from=builder /app/venv venv
+# Copy the rest of the application code
 COPY . .
 
-ENV VIRTUAL_ENV=/app/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV FLASK_APP=app/app.py
+# Expose the application port
+EXPOSE 8000
 
-EXPOSE 8080
-
+# Specify the command to run the app with venv activation
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
