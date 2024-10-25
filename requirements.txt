@@ -1,5 +1,7 @@
 tensorflow
+numpy
 uvicorn
 fastapi
 pydantic
 python-multipart
+python-dotenv
