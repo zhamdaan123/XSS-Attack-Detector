@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XSS Attack Detector</title>
+
+    <link rel="stylesheet" href="/static/mdbootstrap-8.0.0/mdb.min.css" />
+  </head>
+
+  <body class="bg-body-tertiary">
+    <div class="container my-5">
+      <div class="mb-5 d-flex align-items-center gap-2 justify-content-between">
+        <h1 class="mb-0 fw-bold">XSS Attack Detector - DEMO</h1>
+        <a href="/api" class="btn btn-lg btn-warning"> API Documentation </a>
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-6">
+          <div class="card card-body rounded-5">
+            <h5 class="card-title fw-bold mb-4 text-success">
+              <div class="d-flex align-items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="25"
+                  height="25"
+                  fill="currentColor"
+                  class="bi bi-lock-fill"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"
+                  />
+                </svg>
+                <span>Protected Content</span>
+              </div>
+            </h5>
+            <form id="protected-form" method="post" action="/demo/content">
+              <div class="mb-4">
+                <div data-mdb-input-init class="form-outline mb-1">
+                  <textarea
+                    name="content"
+                    id="protected"
+                    class="form-control form-control-lg"
+                    required
+                    rows="5"
+                  ></textarea>
+                  <label class="form-label" for="protected">Content</label>
+                </div>
+              </div>
+
+              <div class="text-start d-grid">
+                <button
+                  class="btn btn-primary btn-lg"
+                  type="submit"
+                  data-mdb-ripple-init
+                >
+                  Attack
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="card card-body rounded-5">
+            <h5 class="card-title fw-bold mb-4 text-danger">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="25"
+                    height="25"
+                    fill="currentColor"
+                    class="bi bi-unlock-fill"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2"
+                    />
+                  </svg>
+                  <span>Unprotected Content</span>
+                </div>
+                <a
+                  href="/demo/content"
+                  class="small fw-normal text-decoration-underline"
+                >
+                  See content
+                </a>
+              </div>
+            </h5>
+            <form id="unprotected-form" method="post" action="/demo/content">
+              <div class="mb-4">
+                <div data-mdb-input-init class="form-outline mb-1">
+                  <textarea
+                    name="content"
+                    id="unprotected"
+                    class="form-control form-control-lg"
+                    required
+                    rows="5"
+                  ></textarea>
+                  <label class="form-label" for="unprotected">Content</label>
+                </div>
+              </div>
+
+              <div class="text-start d-grid">
+                <button
+                  class="btn btn-primary btn-lg"
+                  type="submit"
+                  data-mdb-ripple-init
+                >
+                  Attack
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="alert fade"
+      id="notification"
+      alert-dismissible
+      data-mdb-position="bottom-left"
+      data-mdb-hidden="true"
+      role="alert"
+      data-mdb-alert-init
+      data-mdb-color="primary"
+    >
+      <span id="message"></span>
+      <button
+        type="button"
+        class="btn-close"
+        data-mdb-dismiss="alert"
+        aria-label="Close"
+      ></button>
+    </div>
+
+    <script src="/static/mdbootstrap-8.0.0/mdb.umd.min.js"></script>
+
+    <script>
+      document
+        .getElementById("protected-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          try {
+            var response = await fetch("/api/check", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                content: document.getElementById("protected").value,
+              }),
+            });
+            if (response.ok) {
+              var result = await response.json();
+              if (result.is_malicious) {
+                notify(
+                  "Sorry, this field contains malicious content.",
+                  "danger"
+                );
+              } else {
+                localStorage.setItem("message", "Content Saved!");
+                localStorage.setItem("color", "success");
+                e.target.submit();
+              }
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        });
+
+      document
+        .getElementById("unprotected-form")
+        .addEventListener("submit", (e) => {
+          e.preventDefault();
+          localStorage.setItem("message", "Content Saved!");
+          localStorage.setItem("color", "success");
+          e.target.submit();
+        });
+
+      function notify(message = null, color = null) {
+        if (!message && !color) {
+          message = localStorage.getItem("message");
+          color = localStorage.getItem("color");
+          localStorage.removeItem("message");
+          localStorage.removeItem("color");
+        }
+
+        if (message && color) {
+          const element = document.getElementById("notification");
+          element.querySelector("#message").innerHTML = message;
+          const alert = mdb.Alert.getOrCreateInstance(element);
+          alert.update({ color: color });
+          alert.show();
+        }
+      }
+
+      notify();
+    </script>
+  </body>
+</html>

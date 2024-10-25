@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XSS Attack Detector</title>
+
+    <link rel="stylesheet" href="/static/mdbootstrap-8.0.0/mdb.min.css" />
+
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+
+      img {
+        object-fit: cover;
+        object-position: right;
+      }
+    </style>
+  </head>
+
+  <body class="d-flex align-items-center bg-body-tertiary">
+    <div class="container">
+      <div class="card mb-3">
+        <div class="row g-0">
+          <div class="d-none d-md-block col-md-6 col-lg-8">
+            <img
+              src="/static/img/login-banner.jpg"
+              class="img-fluid rounded-start w-100 h-100"
+            />
+          </div>
+          <div class="col-12 col-md-6 col-lg-4 py-5 px-4">
+            <h1 class="fw-bold">Sign Up</h1>
+            <p class="mb-4">
+              Please fill the below form to create a new account
+            </p>
+            <form>
+              <!-- Name input -->
+              <div class="mb-3">
+                <div data-mdb-input-init class="form-outline mb-1">
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    class="form-control form-control-lg"
+                    required
+                  />
+                  <label class="form-label" for="name">Name</label>
+                </div>
+                <div id="name-result" class="small d-none"></div>
+              </div>
+
+              <!-- Email input -->
+              <div class="mb-3">
+                <div data-mdb-input-init class="form-outline mb-1">
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    class="form-control form-control-lg"
+                    required
+                  />
+                  <label class="form-label" for="email">Email</label>
+                </div>
+                <div id="email-result" class="small d-none"></div>
+              </div>
+
+              <!-- Password input -->
+              <div class="mb-3">
+                <div data-mdb-input-init class="form-outline mb-1">
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    class="form-control form-control-lg"
+                    required
+                  />
+                  <label class="form-label" for="password">Password</label>
+                </div>
+                <div id="password-result" class="small d-none"></div>
+              </div>
+
+              <div class="text-end">
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                  data-mdb-ripple-init
+                >
+                  Register
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/mdbootstrap-8.0.0/mdb.umd.min.js"></script>
+
+    <script>
+      document.querySelector("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        try {
+          const formData = Array.from(new FormData(e.target).entries()).map(
+            ([label, value]) => {
+              return { label: label, content: value };
+            }
+          );
+          var response = await fetch("/api/check/multiple", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+          });
+          if (response.ok) {
+            var result = await response.json();
+            result.forEach((item) => {
+              const resultEl = document.getElementById(`${item.label}-result`);
+              resultEl.innerText = `Score: ${Math.ceil(item.score * 100)}%`;
+              resultEl.classList.remove("d-none");
+              resultEl.classList.add(
+                item.is_malicious ? "text-danger" : "text-success"
+              );
+            });
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+    </script>
+  </body>
+</html>

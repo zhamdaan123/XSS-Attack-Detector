@@ -1,0 +1,10 @@
+tensorflow
+Flask
+numpy
+uvicorn
+fastapi
+pydantic
+python-multipart
+pandas
+scikit-learn
+matplotlib
